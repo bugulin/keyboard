@@ -1,7 +1,9 @@
 # Keyboard share
 With this app you can share your keyboard to others in your network.
 
-## Compiling
-Compile easily with this command:
+## Building
+There are two programs - server and client (server shares its keyboard to client).
+To build with Makefile, type:
 
-	gcc server.c -o server
+	$ make server
+	$ make client
