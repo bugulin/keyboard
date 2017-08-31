@@ -1,5 +1,6 @@
 # Executables
 server
+client
 
 # Object files
 *.o

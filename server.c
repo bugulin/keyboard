@@ -53,7 +53,7 @@ void start_server(void)
 
 int send_u16(__u16 number)
 {
-	__u16 tmp = htonl(number);
+	__u16 tmp = htons(number);
 	return send(client, &tmp, sizeof(tmp), MSG_NOSIGNAL);
 }
 
@@ -61,6 +61,13 @@ int send_s32(__s32 number)
 {
 	__s32 tmp = htonl(number);
 	return send(client, &tmp, sizeof(tmp), MSG_NOSIGNAL);
+}
+
+void send_end_signal(void)
+{
+	send_u16(0);
+	send_u16(0);
+	send_s32(-1);
 }
 
 int main(int argc, char *argv[])
@@ -114,7 +121,10 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
-	
+
+	send_end_signal();
+	usleep(100000); // Waiting for clients to end connection.
+
 	close(file_descriptor);
 	close(client);
 	close(server);
