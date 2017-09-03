@@ -14,6 +14,8 @@
 #include <string.h>
 #include <errno.h>
 
+#define DEVICE "/dev/input/event3"
+
 typedef struct input_event input_event;
 
 int sockfd, r;
@@ -80,10 +82,17 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 	
-	printf("Started listening %s:%s.\n", argv[1], argv[2]);
+	printf("Connected to %s:%s.\n", argv[1], argv[2]);
+
+	int file_descriptor = open(DEVICE, O_WRONLY | O_APPEND);
+	if (file_descriptor < 0) {
+		printf("Cannot open file '%s': %s\n", DEVICE, strerror(errno));
+		return 1;
+	}
 
 	int running = 1;
 	input_event event;
+	size_t event_size = sizeof(event);
 
 	while (running) {
 		if (read_u16(&event.type) < 1) {
@@ -100,12 +109,19 @@ int main(int argc, char *argv[])
 		}
 
 		if (is_end_signal(event)) {
-			printf("End signal...\n");
+#ifdef DEBUG
+			printf("End signal was received.\n");
+#endif
 			running = 0;
 			break;
 		}
-		
+
+#ifdef DEBUG
 		printf("%d %d %d\n", event.type, event.code, event.value);
+#endif
+		if (write(file_descriptor, &event, event_size) != (int)event_size) {
+			printf("Error writeing to device file.\n");
+		}
 	}
 
 	close(sockfd);

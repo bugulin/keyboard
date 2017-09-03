@@ -64,6 +64,9 @@ int send_s32(__s32 number)
 
 void send_end_signal(void)
 {
+#ifdef DEBUG
+	printf("Sending end signal.\n");
+#endif
 	send_u16(0);
 	send_u16(0);
 	send_s32(-1);
@@ -77,7 +80,7 @@ int main(int argc, char *argv[])
 	}
 	
 	int file_descriptor = open(argv[1], O_RDONLY);
-	if (file_descriptor == -1) {
+	if (file_descriptor < 0) {
 		printf("Cannot open '%s' for reading: %s\n", argv[1], strerror(errno));
 		return 1;
 	}
@@ -89,6 +92,7 @@ int main(int argc, char *argv[])
 	}
 	
 	start_server();
+	printf("Waiting for a client.\n");
 	client = accept(server, (struct sockaddr *)&client_address, &client_size);
 	if (client < 0) {
 		printf("Error on accepting a connection.\n");
@@ -96,13 +100,14 @@ int main(int argc, char *argv[])
 	}
 	
 	signal(SIGINT, stop);
-	printf("Handling keyboard input.\n");
 	
 	input_event event;
 	size_t event_size = sizeof(input_event);
 	
 	while (read(file_descriptor, &event, event_size) > 0 && running) {
+#ifdef DEBUG
 		printf("Event: time %ld.%06ld, type %d, code %d, value %d\n", event.time.tv_sec, event.time.tv_usec, event.type, event.code, event.value);
+#endif
 		
 		if (send_u16(event.type) < 0) {
 			printf("Error sending data (event.type): %s\n", strerror(errno));
