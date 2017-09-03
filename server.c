@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <signal.h>
 
 // Reading device file
@@ -13,8 +14,6 @@
 // Error reporting
 #include <string.h>
 #include <errno.h>
-
-#define PORT 4433
 
 typedef struct input_event input_event;
 
@@ -72,8 +71,8 @@ void send_end_signal(void)
 
 int main(int argc, char *argv[])
 {
-	if (argc != 2) {
-		printf("Usage: %s <device_file>\n", argv[0]);
+	if (argc != 3) {
+		printf("Usage: %s <device_file> <port>\n", argv[0]);
 		return 1;
 	}
 	
@@ -83,7 +82,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	int server_socket = init_socket(4433);
+	int server_socket = init_socket(atoi(argv[2]));
 	if (server_socket < 0) {
 		printf("Socket error: %s\n", strerror(errno));
 		return 1;
